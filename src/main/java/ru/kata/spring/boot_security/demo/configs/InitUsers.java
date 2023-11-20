@@ -2,17 +2,14 @@ package ru.kata.spring.boot_security.demo.configs;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-import ru.kata.spring.boot_security.demo.dao.UserDao;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
+import ru.kata.spring.boot_security.demo.repository.RoleRepository;
+import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.util.List;
 
@@ -20,27 +17,33 @@ import java.util.List;
 public class InitUsers {
 
     @Autowired
-    BCryptPasswordEncoder encoder;
+    private BCryptPasswordEncoder encoder;
     @Autowired
-    UserDao userDao;
+    private UserRepository userRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void addUsers(){
+        roleRepository.deleteAll();
+        userRepository.deleteAll();
 
-        userDao.deleteAll();
+        Role roleAdmin = roleRepository.save(new Role(1,"ROLE_ADMIN"));
+        Role roleUser = roleRepository.save(new Role(2, "ROLE_USER"));
 
-        userDao.addUser(new User(
-                List.of(new Role("ROLE_ADMIN")),
+        userRepository.save(new User(
+                List.of(roleAdmin),
                 "admin",
                 encoder.encode("admin"),
                 22,
                 "admin@mail.ru"
         ));
 
-        userDao.addUser(new User(
-                List.of(new Role("ROLE_USER")),
+        userRepository.save(new User(
+                List.of(roleUser),
                 "user",
                 encoder.encode("user"),
                 22,

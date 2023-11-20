@@ -1,8 +1,7 @@
 package ru.kata.spring.boot_security.demo.model;
 
-import org.springframework.security.core.GrantedAuthority;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.security.core.userdetails.UserDetails;
-import ru.kata.spring.boot_security.demo.converter.AuthorityDatabaseConverter;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -11,12 +10,14 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import org.hibernate.annotations.Parameter;
 
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.AUTO)
     private int id;
     @Column(name = "name")
     @Pattern(regexp = "[A-z]+",message = "only words")
@@ -29,15 +30,19 @@ public class User implements UserDetails {
     @Column(name = "email")
     private String email;
 
-    @Convert(converter = AuthorityDatabaseConverter.class)
-    @Column(name = "authorities")
-    private List<Role> grantedAuthorities;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private List<Role> roles;
 
     @Column(name = "password")
     private String password;
 
-    public User(List<Role> grantedAuthorities, String username, String password, int age, String email){
-        this.grantedAuthorities = grantedAuthorities;
+    public User(List<Role> roles, String username, String password, int age, String email){
+        this.roles = roles;
         this.name = username;
         this.password = password;
         this.age = age;
@@ -94,7 +99,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends Role> getAuthorities() {
-        return grantedAuthorities;
+        return roles;
     }
 
     @Override
@@ -102,6 +107,9 @@ public class User implements UserDetails {
         return password;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
     @Override
     public String getUsername() {
         return name;
@@ -125,5 +133,25 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public List<Role> getRoles(){
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles){
+        this.roles = roles;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User user)) return false;
+        return getId() == user.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }

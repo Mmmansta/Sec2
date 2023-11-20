@@ -13,17 +13,17 @@
 <p th:text="${user.getEmail()}"> VALUE </p>
 
 <br/>
-<a th:href="@{/users/{id}/edit (id=${user.getId()})}">Edit</a>
+<a th:href="@{/admin/{id}/edit (id=${user.getId()})}">Edit</a>
 <br/>
 <br/>
-<form th:method="DELETE" th:action="@{/users/{id}(id=${user.getId()})}">
+<form method="post" th:action="@{/admin/{id}/delete (id=${user.getId()})}">
     <input type="submit" value="Delete"/>
 </form>
 
 <hr/>
 <br/>
 
-<a href="/users"> Back to all users</a>
+<a href="/admin"> Back to all users</a>
 
 <a href="#" th:href="@{/logout}">Log Out</a>
 

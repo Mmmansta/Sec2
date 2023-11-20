@@ -1,50 +1,57 @@
 package ru.kata.spring.boot_security.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kata.spring.boot_security.demo.dao.UserDao;
 import ru.kata.spring.boot_security.demo.model.User;
-
+import ru.kata.spring.boot_security.demo.repository.RoleRepository;
+import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
 import java.util.List;
 
 @Service
 public class UserServiceImp implements UserService {
 
-    private final UserDao userDao;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder encoder;
     @Autowired
-    public UserServiceImp(UserDao userDao) {
-        this.userDao = userDao;
+    public UserServiceImp(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder) {
+        this.encoder = encoder;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
     }
 
 
     @Override
     public List<User> getUsers() {
-        return userDao.getUsers();
+        return userRepository.findAll();
     }
 
     @Override
     public User getUserById(int id) {
-        return userDao.getUserById(id);
+        return userRepository.getReferenceById(id);
     }
 
     @Transactional
     @Override
     public void addUser(User user) {
-        userDao.addUser(user);
+        user.setPassword(encoder.encode(user.getPassword()));
+        userRepository.save(user);
     }
 
     @Transactional
     @Override
-    public User updateUser(int id, User updatedUser) {
-        return userDao.updateUser(id, updatedUser);
+    public User updateUser(User updatedUser) {
+        updatedUser.setPassword(encoder.encode(updatedUser.getPassword()));
+        return userRepository.save(updatedUser);
     }
 
     @Transactional
     @Override
     public void deleteUser(int id) {
-        userDao.deleteUser(id);
+        userRepository.deleteById(id);
     }
 
 }

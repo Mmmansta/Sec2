@@ -15,7 +15,7 @@
 <body>
 
 <div class="main">
-    <form th:method="POST" th:action="@{/users}" th:object="${user}">
+    <form th:method="POST" th:action="@{/admin}" th:object="${user}">
         <div class="field">
             <label for="firstName">Enter name:</label>
             <input type="text" th:field="*{name}" id="firstName"/>
@@ -34,6 +34,18 @@
             <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
         </div>
         <br/>
+        <div class="field">
+            <label for="password">Enter password: </label>
+            <input type="password" th:field="*{password}" id="password"/>
+            <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+        </div>
+        <div class="field">
+            <label for="roles">Select roles: </label>
+            <select th:field="*{roles}" id="roles" style="width:100%" multiple>
+                <option th:value="1" th:text="ADMIN"></option>
+                <option th:value="2" th:text="USER"></option>
+            </select>
+        </div>
         <input type="submit" value="Create!"/>
     </form>
 </div>
